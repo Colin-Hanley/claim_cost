@@ -4,7 +4,7 @@ from azure.ai.ml import MLClient
 from azure.identity import AzureCliCredential
 
 if __name__ == "__main__":
-    endpoint_name = "no-loss-endpoint"
+    endpoint_name = "claims-inference-endpoint"
 
     with open("config.json") as f:
         config = json.load(f)

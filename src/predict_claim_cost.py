@@ -3,7 +3,7 @@ import logging
 import os
 import joblib
 import xgboost as xgb
-from inference_utils import payload_to_df, apply_inference_encoding
+from inference_utils import transform_payload_dict_to_dataframe, apply_inference_encoding
 
 
 def init():
@@ -28,17 +28,19 @@ def init():
     inference_encoder = joblib.load(encoder_path)
     logging.info("Models loaded successfully")
 
-    with open(os.path.join(model_folder,'dtypes_dict.json'), 'r') as json_file:
+    with open(os.path.join(model_folder, 'dtypes_dict.json'), 'r') as json_file:
         loaded_dtypes_dict = json.load(json_file)
 
 
 def run(data):
     logging.info("Run called")
     try:
-        data_dict = json.loads(data)
-        payload = payload_to_df(data_dict)
+
+        payload = transform_payload_dict_to_dataframe(json.loads(data))
         payload = payload.astype(loaded_dtypes_dict)
+
         encoded_payload = apply_inference_encoding(payload, inference_encoder)
+
         encoded_payload["loss_proba"] = no_loss_classifier.predict(encoded_payload)[0]
         result = claim_regressor.predict(encoded_payload)[0]
 
@@ -54,7 +56,6 @@ def run(data):
     except Exception as e:
         logging.error(f"Error: {str(e)}")
 
-        # Error response
         response = {
             "status": "error",
             "message": str(e)
